@@ -501,7 +501,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // تمام کدهای JavaScript را درون یک IIFE قرار می‌دهیم تا از تداخل جلوگیری شود
         (function() {
             'use strict';
             
@@ -509,10 +508,8 @@
             const SUPABASE_URL = 'https://przbbhjdxytirhepfiwt.supabase.co';
             const SUPABASE_ANON_KEY = 'sb_publishable_sv61-GOMaW1nBXV_aKGpww_laLO4Fzv';
             
-            // متغیر global برای Supabase client
             let supabaseClient = null;
             
-            // فرم‌های پرسشنامه (فرم 0: اطلاعات دموگرافیک)
             const forms = [
                 { id: 'form0', title: 'اطلاعات دموگرافیک' },
                 { id: 'form1', title: 'GHQ-28' },
@@ -562,7 +559,7 @@
                 ]}
             ];
 
-            // سوالات SCS (سوالات معکوس فقط برای تحلیلگر: 2,4,6,8,10,12,14,16,18,20,22,24,26)
+            // سوالات SCS (سوالات معکوس فقط در کد: 2,4,6,8,10,12,14,16,18,20,22,24,26)
             const scsQuestions = [
                 'وقتی اشتباه می‌کنم، با خودم مهربان هستم.',
                 'وقتی شکست می‌خورم، خودم را به‌شدت سرزنش می‌کنم.',
@@ -592,7 +589,7 @@
                 'وقتی شکست می‌خورم، خودم را تحقیر می‌کنم.'
             ];
 
-            // سوالات ESQ (سوالات معکوس فقط برای تحلیلگر: 2,8,13,20)
+            // سوالات ESQ (سوالات معکوس فقط در کد: 2,8,13,20)
             const esqQuestions = [
                 'بعد از یک اتفاق ناراحت‌کننده سریع به حالت عادی برمی‌گردم.',
                 'احساسات منفی مدت زیادی در من باقی می‌مانند.',
@@ -620,20 +617,14 @@
                 'هنگام هیجان، کنترل توجه خود را از دست نمی‌دهم'
             ];
 
-            // سوالات معکوس (فقط برای تحلیلگر در metadata ذخیره می‌شود)
-            const scsNegative = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
-            const esqNegative = [2, 8, 13, 20];
-
             // تابع مقداردهی اولیه Supabase
             function initSupabase() {
                 try {
-                    // بررسی اینکه آیا کتابخانه Supabase بارگذاری شده است
                     if (typeof supabase === 'undefined') {
                         console.warn('Supabase library not loaded');
                         return false;
                     }
                     
-                    // ایجاد کلاینت Supabase
                     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                     console.log('Supabase client initialized successfully');
                     return true;
@@ -645,10 +636,7 @@
 
             // Initialize when DOM is ready
             document.addEventListener('DOMContentLoaded', function() {
-                // مقداردهی اولیه Supabase
                 initSupabase();
-                
-                // مقداردهی فرم‌ها
                 renderGHQQuestions();
                 renderSCSQuestions();
                 renderESQQuestions();
@@ -657,7 +645,6 @@
                 showCurrentForm();
             });
 
-            // Helper functions for labels
             function getGHQLabel(value) {
                 const labels = {1: 'اصلاً', 2: 'کم', 3: 'زیاد', 4: 'خیلی زیاد'};
                 return labels[value];
@@ -677,15 +664,13 @@
                 const container = document.getElementById('ghq-questions');
                 let questionNumber = 1;
                 
-                ghqQuestions.forEach((section, sectionIndex) => {
-                    // Add section title
+                ghqQuestions.forEach((section) => {
                     const sectionTitle = document.createElement('div');
                     sectionTitle.className = 'section-title';
                     sectionTitle.textContent = `${section.section}`;
                     container.appendChild(sectionTitle);
                     
-                    // Add questions
-                    section.questions.forEach((question, index) => {
+                    section.questions.forEach((question) => {
                         const questionItem = document.createElement('div');
                         questionItem.className = 'question-item';
                         questionItem.innerHTML = `
@@ -711,7 +696,7 @@
                 });
             }
 
-            // رندر سوالات SCS (بدون علامت‌گذاری معکوس)
+            // رندر سوالات SCS
             function renderSCSQuestions() {
                 const container = document.getElementById('scs-questions');
                 
@@ -741,7 +726,7 @@
                 });
             }
 
-            // رندر سوالات ESQ (بدون علامت‌گذاری معکوس)
+            // رندر سوالات ESQ
             function renderESQQuestions() {
                 const container = document.getElementById('esq-questions');
                 
@@ -775,18 +760,12 @@
             function showCurrentForm() {
                 forms.forEach((form, index) => {
                     const formElement = document.getElementById(form.id);
-                    
-                    if (index === currentFormIndex) {
-                        formElement.style.display = 'block';
-                    } else {
-                        formElement.style.display = 'none';
-                    }
+                    formElement.style.display = index === currentFormIndex ? 'block' : 'none';
                 });
                 
                 updateFormIndicator();
                 updateProgressBar();
                 
-                // Show/hide navigation and submit section
                 if (currentFormIndex === 0) {
                     document.getElementById('formNav').style.display = 'none';
                     document.getElementById('submitSection').style.display = 'none';
@@ -801,7 +780,6 @@
                     document.getElementById('submitSection').style.display = 'none';
                 }
                 
-                // اسکرول به بالای فرم فعلی
                 scrollToTopOfCurrentForm();
             }
 
@@ -816,7 +794,6 @@
             }
 
             function showNextForm() {
-                // Validate current form before proceeding
                 if (!validateCurrentForm()) {
                     return;
                 }
@@ -825,7 +802,6 @@
                     currentFormIndex++;
                     showCurrentForm();
                 } else if (currentFormIndex === forms.length - 1) {
-                    // Last form completed, show submit section
                     currentFormIndex = forms.length;
                     showCurrentForm();
                 }
@@ -843,45 +819,34 @@
             }
 
             function validateCurrentForm() {
-                // فرم 0: اطلاعات دموگرافیک
                 if (currentFormIndex === 0) {
-                    // Check age
                     const age = document.getElementById('age').value;
                     if (!age || age < 15 || age > 50) {
                         alert('لطفاً سن خود را به درستی وارد کنید (بین 15 تا 50 سال).');
                         return false;
                     }
                     
-                    // Check education level
-                    const educationLevel = document.getElementById('educationLevel').value;
-                    if (!educationLevel) {
+                    if (!document.getElementById('educationLevel').value) {
                         alert('لطفاً مقطع تحصیلی خود را انتخاب کنید.');
                         return false;
                     }
                     
-                    // Check semester
-                    const semester = document.getElementById('semester').value;
-                    if (!semester) {
+                    if (!document.getElementById('semester').value) {
                         alert('لطفاً ترم/سال تحصیلی خود را انتخاب کنید.');
                         return false;
                     }
                     
-                    // Check field of study
-                    const fieldOfStudy = document.getElementById('fieldOfStudy').value;
-                    if (!fieldOfStudy) {
+                    if (!document.getElementById('fieldOfStudy').value) {
                         alert('لطفاً رشته تحصیلی خود را انتخاب کنید.');
                         return false;
                     }
                     
-                    // Check residence status
-                    const residenceStatus = document.getElementById('residenceStatus').value;
-                    if (!residenceStatus) {
+                    if (!document.getElementById('residenceStatus').value) {
                         alert('لطفاً وضعیت سکونت خود را انتخاب کنید.');
                         return false;
                     }
                 }
                 
-                // Check if all questions in current form are answered
                 const currentFormId = forms[currentFormIndex]?.id;
                 if (!currentFormId || currentFormIndex === 0) return true;
                 
@@ -917,24 +882,17 @@
             }
 
             function updateProgressBar() {
-                // کل سوالات: 4 بخش دموگرافیک + 28 + 26 + 24 = 82
                 const totalItems = 4 + 28 + 26 + 24;
                 let answered = 0;
                 
-                // Check demographic info
                 if (document.getElementById('age').value) answered++;
                 if (document.getElementById('educationLevel').value) answered++;
                 if (document.getElementById('semester').value) answered++;
                 if (document.getElementById('fieldOfStudy').value) answered++;
                 if (document.getElementById('residenceStatus').value) answered++;
                 
-                // Check GHQ questions
                 answered += document.querySelectorAll('#ghq-questions input[type="radio"]:checked').length;
-                
-                // Check SCS questions
                 answered += document.querySelectorAll('#scs-questions input[type="radio"]:checked').length;
-                
-                // Check ESQ questions
                 answered += document.querySelectorAll('#esq-questions input[type="radio"]:checked').length;
                 
                 const progress = (answered / totalItems) * 100;
@@ -942,14 +900,13 @@
             }
 
             function reviewAnswers() {
-                currentFormIndex = 1; // شروع از فرم اول پرسشنامه
+                currentFormIndex = 1;
                 showCurrentForm();
             }
 
-            // جمع‌آوری داده‌ها برای دیتابیس
+            // جمع‌آوری داده‌ها - فقط داده‌های ضروری
             function collectDataForDatabase() {
                 const data = {
-                    // اطلاعات دموگرافیک
                     age: parseInt(document.getElementById('age').value),
                     student_code: document.getElementById('studentCode').value || null,
                     education_level: parseInt(document.getElementById('educationLevel').value),
@@ -958,19 +915,10 @@
                     residence_status: parseInt(document.getElementById('residenceStatus').value),
                     submission_date: new Date().toISOString(),
                     
-                    // GHQ Answers (jsonb)
                     ghq_answers: {},
-                    // SCS Answers (jsonb)
                     scs_answers: {},
-                    // ESQ Answers (jsonb)
                     esq_answers: {},
-                    // Scores (jsonb)
-                    scores: {},
-                    // Metadata برای تحلیلگر (شامل سوالات معکوس)
-                    metadata: {
-                        scs_negative_items: scsNegative,
-                        esq_negative_items: esqNegative
-                    }
+                    scores: {}
                 };
                 
                 // جمع‌آوری پاسخ‌های GHQ
@@ -997,7 +945,7 @@
                     }
                 }
                 
-                // محاسبه نمرات (با در نظر گرفتن سوالات معکوس)
+                // محاسبه نمرات نهایی (تحلیلگر خودش معکوس می‌کند)
                 const scores = calculateScores();
                 data.scores = {
                     ghq_total: scores.ghq_total,
@@ -1005,10 +953,7 @@
                     esq_total: scores.esq_total,
                     ghq_average: parseFloat(scores.ghq_average),
                     scs_average: parseFloat(scores.scs_average),
-                    esq_average: parseFloat(scores.esq_average),
-                    // نمرات قبل از معکوس‌سازی نیز ذخیره می‌شوند
-                    scs_raw_total: scores.scs_raw_total,
-                    esq_raw_total: scores.esq_raw_total
+                    esq_average: parseFloat(scores.esq_average)
                 };
                 
                 return data;
@@ -1020,42 +965,70 @@
                 return radio ? parseInt(radio.value) : null;
             }
 
-            // جمع‌آوری و ارسال داده‌ها به Supabase
+            // محاسبه نمرات (تحلیلگر خودش معکوس می‌کند، ما فقط جمع می‌کنیم)
+            function calculateScores() {
+                // Calculate GHQ score
+                let ghqTotal = 0;
+                for (let i = 1; i <= 28; i++) {
+                    const value = getRadioValue(`ghq_${i}`);
+                    if (value !== null) ghqTotal += value;
+                }
+                
+                // Calculate SCS score - فقط جمع ساده
+                let scsTotal = 0;
+                for (let i = 1; i <= 26; i++) {
+                    const value = getRadioValue(`scs_${i}`);
+                    if (value !== null) {
+                        scsTotal += value;
+                    }
+                }
+                
+                // Calculate ESQ score - فقط جمع ساده
+                let esqTotal = 0;
+                for (let i = 1; i <= 24; i++) {
+                    const value = getRadioValue(`esq_${i}`);
+                    if (value !== null) {
+                        esqTotal += value;
+                    }
+                }
+                
+                return {
+                    ghq_total: ghqTotal,
+                    scs_total: scsTotal,
+                    esq_total: esqTotal,
+                    ghq_average: (ghqTotal / 28).toFixed(2),
+                    scs_average: (scsTotal / 26).toFixed(2),
+                    esq_average: (esqTotal / 24).toFixed(2)
+                };
+            }
+
+            // ارسال داده‌ها به Supabase
             async function submitAllForms() {
-                // Validate all forms
                 if (!validateAllForms()) {
                     alert('لطفاً به تمام سوالات ضروری پاسخ دهید.');
                     return;
                 }
                 
-                // Show loading modal
                 const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
                 loadingModal.show();
                 
                 try {
-                    // Collect data - مطابق با ساختار جدول
                     const responseData = collectDataForDatabase();
                     
-                    // Check if Supabase client is initialized
                     if (!supabaseClient) {
-                        throw new Error('Supabase client not initialized. Please check your Supabase configuration.');
+                        throw new Error('Supabase client not initialized.');
                     }
                     
-                    // Insert into Supabase
                     const { data, error } = await supabaseClient
                         .from('questionnaire_responses')
                         .insert([responseData]);
                     
                     if (error) throw error;
                     
-                    // Hide loading modal
                     loadingModal.hide();
-                    
-                    // Show success modal
                     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
                     successModal.show();
                     
-                    // Reset form after 3 seconds
                     setTimeout(() => {
                         successModal.hide();
                         resetForm();
@@ -1065,33 +1038,24 @@
                     console.error('Error saving data:', error);
                     loadingModal.hide();
                     
-                    // نمایش پیام خطا به کاربر
-                    if (error.message.includes('Supabase client not initialized') || !supabaseClient) {
-                        // حالت fallback: ذخیره در localStorage
-                        const useLocalStorage = confirm(
-                            'اتصال به سرور برقرار نیست. آیا می‌خواهید پاسخ‌ها را به صورت موقت در مرورگر ذخیره کنید؟'
-                        );
-                        
-                        if (useLocalStorage) {
-                            const responseData = collectDataForDatabase();
-                            
-                            // ذخیره در localStorage
-                            const backupKey = `questionnaire_backup_${Date.now()}`;
-                            localStorage.setItem(backupKey, JSON.stringify(responseData));
-                            
-                            alert(`پاسخ‌های شما با کد ${backupKey} در مرورگر ذخیره شد. لطفاً این کد را به محقق ارائه دهید.`);
-                            
-                            // ریست فرم
-                            resetForm();
-                        }
+                    // حالت fallback
+                    const useLocalStorage = confirm(
+                        'اتصال به سرور برقرار نیست. آیا می‌خواهید پاسخ‌ها را به صورت موقت در مرورگر ذخیره کنید؟'
+                    );
+                    
+                    if (useLocalStorage) {
+                        const responseData = collectDataForDatabase();
+                        const backupKey = `questionnaire_backup_${Date.now()}`;
+                        localStorage.setItem(backupKey, JSON.stringify(responseData));
+                        alert(`پاسخ‌های شما با کد ${backupKey} در مرورگر ذخیره شد. لطفاً این کد را به محقق ارائه دهید.`);
+                        resetForm();
                     } else {
-                        alert('خطا در ذخیره اطلاعات. لطفاً دوباره تلاش کنید.\n' + error.message);
+                        alert('خطا در ذخیره اطلاعات. لطفاً دوباره تلاش کنید.');
                     }
                 }
             }
 
             function validateAllForms() {
-                // Validate demographic info
                 const age = document.getElementById('age').value;
                 if (!age || age < 15 || age > 50) {
                     alert('لطفاً سن خود را به درستی وارد کنید (بین 15 تا 50 سال).');
@@ -1134,62 +1098,7 @@
                 return true;
             }
 
-            function calculateScores() {
-                // Calculate GHQ score
-                let ghqTotal = 0;
-                for (let i = 1; i <= 28; i++) {
-                    const value = getRadioValue(`ghq_${i}`);
-                    if (value !== null) ghqTotal += value;
-                }
-                
-                // Calculate SCS score (با معکوس‌سازی سوالات منفی)
-                let scsTotal = 0;
-                let scsRawTotal = 0; // نمره قبل از معکوس‌سازی
-                for (let i = 1; i <= 26; i++) {
-                    let value = getRadioValue(`scs_${i}`);
-                    if (value !== null) {
-                        // ذخیره نمره خام
-                        scsRawTotal += value;
-                        
-                        // معکوس‌سازی برای سوالات منفی
-                        if (scsNegative.includes(i)) {
-                            value = 6 - value; // Reverse score (5-point scale)
-                        }
-                        scsTotal += value;
-                    }
-                }
-                
-                // Calculate ESQ score (با معکوس‌سازی سوالات منفی)
-                let esqTotal = 0;
-                let esqRawTotal = 0; // نمره قبل از معکوس‌سازی
-                for (let i = 1; i <= 24; i++) {
-                    let value = getRadioValue(`esq_${i}`);
-                    if (value !== null) {
-                        // ذخیره نمره خام
-                        esqRawTotal += value;
-                        
-                        // معکوس‌سازی برای سوالات منفی
-                        if (esqNegative.includes(i)) {
-                            value = 6 - value; // Reverse score (5-point scale)
-                        }
-                        esqTotal += value;
-                    }
-                }
-                
-                return {
-                    ghq_total: ghqTotal,
-                    scs_total: scsTotal,
-                    esq_total: esqTotal,
-                    scs_raw_total: scsRawTotal,
-                    esq_raw_total: esqRawTotal,
-                    ghq_average: (ghqTotal / 28).toFixed(2),
-                    scs_average: (scsTotal / 26).toFixed(2),
-                    esq_average: (esqTotal / 24).toFixed(2)
-                };
-            }
-
             function resetForm() {
-                // Reset all inputs
                 document.getElementById('age').value = '';
                 document.getElementById('studentCode').value = '';
                 document.getElementById('educationLevel').value = '';
@@ -1197,18 +1106,16 @@
                 document.getElementById('fieldOfStudy').value = '';
                 document.getElementById('residenceStatus').value = '';
                 
-                // Reset all radio buttons
                 document.querySelectorAll('input[type="radio"]').forEach(radio => {
                     radio.checked = false;
                 });
                 
-                // Go back to first form
                 currentFormIndex = 0;
                 showCurrentForm();
                 updateProgressBar();
             }
 
-            // توابع را در scope سراسری قرار می‌دهیم تا از HTML قابل دسترسی باشند
+            // توابع global
             window.showNextForm = showNextForm;
             window.showPreviousForm = showPreviousForm;
             window.reviewAnswers = reviewAnswers;
