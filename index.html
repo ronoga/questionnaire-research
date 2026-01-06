@@ -125,20 +125,6 @@
             display: none;
         }
         
-        .negative-question {
-            border-right-color: #f8d7da !important;
-            background-color: #fff5f5 !important;
-        }
-        
-        .negative-question:hover {
-            border-right-color: var(--danger-color) !important;
-        }
-        
-        .negative-question .question-text:before {
-            content: "★ ";
-            color: var(--danger-color);
-        }
-        
         .section-title {
             background: linear-gradient(90deg, #f8f9fc, #e3e6f0);
             padding: 12px 20px;
@@ -576,7 +562,7 @@
                 ]}
             ];
 
-            // سوالات SCS (سوالات منفی: 2,4,6,8,10,12,14,16,18,20,22,24,26)
+            // سوالات SCS (سوالات معکوس فقط برای تحلیلگر: 2,4,6,8,10,12,14,16,18,20,22,24,26)
             const scsQuestions = [
                 'وقتی اشتباه می‌کنم، با خودم مهربان هستم.',
                 'وقتی شکست می‌خورم، خودم را به‌شدت سرزنش می‌کنم.',
@@ -606,7 +592,7 @@
                 'وقتی شکست می‌خورم، خودم را تحقیر می‌کنم.'
             ];
 
-            // سوالات ESQ (سوالات منفی: 2,8,13,20)
+            // سوالات ESQ (سوالات معکوس فقط برای تحلیلگر: 2,8,13,20)
             const esqQuestions = [
                 'بعد از یک اتفاق ناراحت‌کننده سریع به حالت عادی برمی‌گردم.',
                 'احساسات منفی مدت زیادی در من باقی می‌مانند.',
@@ -633,6 +619,10 @@
                 'حالات هیجانی دیگران را به‌خوبی درک می‌کنم.',
                 'هنگام هیجان، کنترل توجه خود را از دست نمی‌دهم'
             ];
+
+            // سوالات معکوس (فقط برای تحلیلگر در metadata ذخیره می‌شود)
+            const scsNegative = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
+            const esqNegative = [2, 8, 13, 20];
 
             // تابع مقداردهی اولیه Supabase
             function initSupabase() {
@@ -667,7 +657,7 @@
                 showCurrentForm();
             });
 
-            // Helper functions for labels (حذف شده چون نیازی نیست)
+            // Helper functions for labels
             function getGHQLabel(value) {
                 const labels = {1: 'اصلاً', 2: 'کم', 3: 'زیاد', 4: 'خیلی زیاد'};
                 return labels[value];
@@ -721,21 +711,18 @@
                 });
             }
 
-            // رندر سوالات SCS
+            // رندر سوالات SCS (بدون علامت‌گذاری معکوس)
             function renderSCSQuestions() {
                 const container = document.getElementById('scs-questions');
-                const negativeQuestions = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
                 
                 scsQuestions.forEach((question, index) => {
                     const questionNumber = index + 1;
-                    const isNegative = negativeQuestions.includes(questionNumber);
                     
                     const questionItem = document.createElement('div');
-                    questionItem.className = `question-item ${isNegative ? 'negative-question' : ''}`;
+                    questionItem.className = 'question-item';
                     questionItem.innerHTML = `
                         <div class="question-text">
                             ${questionNumber}. ${question}
-                            ${isNegative ? '<span class="badge bg-danger float-start">سوال معکوس</span>' : ''}
                         </div>
                         <div class="scale-options">
                             ${[1, 2, 3, 4, 5].map(value => `
@@ -754,21 +741,18 @@
                 });
             }
 
-            // رندر سوالات ESQ
+            // رندر سوالات ESQ (بدون علامت‌گذاری معکوس)
             function renderESQQuestions() {
                 const container = document.getElementById('esq-questions');
-                const negativeQuestions = [2, 8, 13, 20];
                 
                 esqQuestions.forEach((question, index) => {
                     const questionNumber = index + 1;
-                    const isNegative = negativeQuestions.includes(questionNumber);
                     
                     const questionItem = document.createElement('div');
-                    questionItem.className = `question-item ${isNegative ? 'negative-question' : ''}`;
+                    questionItem.className = 'question-item';
                     questionItem.innerHTML = `
                         <div class="question-text">
                             ${questionNumber}. ${question}
-                            ${isNegative ? '<span class="badge bg-danger float-start">سوال معکوس</span>' : ''}
                         </div>
                         <div class="scale-options">
                             ${[1, 2, 3, 4, 5].map(value => `
@@ -962,7 +946,7 @@
                 showCurrentForm();
             }
 
-            // جمع‌آوری داده‌ها برای دیتابیس (مطابق با ساختار جدول)
+            // جمع‌آوری داده‌ها برای دیتابیس
             function collectDataForDatabase() {
                 const data = {
                     // اطلاعات دموگرافیک
@@ -981,7 +965,12 @@
                     // ESQ Answers (jsonb)
                     esq_answers: {},
                     // Scores (jsonb)
-                    scores: {}
+                    scores: {},
+                    // Metadata برای تحلیلگر (شامل سوالات معکوس)
+                    metadata: {
+                        scs_negative_items: scsNegative,
+                        esq_negative_items: esqNegative
+                    }
                 };
                 
                 // جمع‌آوری پاسخ‌های GHQ
@@ -1008,7 +997,7 @@
                     }
                 }
                 
-                // محاسبه نمرات
+                // محاسبه نمرات (با در نظر گرفتن سوالات معکوس)
                 const scores = calculateScores();
                 data.scores = {
                     ghq_total: scores.ghq_total,
@@ -1016,7 +1005,10 @@
                     esq_total: scores.esq_total,
                     ghq_average: parseFloat(scores.ghq_average),
                     scs_average: parseFloat(scores.scs_average),
-                    esq_average: parseFloat(scores.esq_average)
+                    esq_average: parseFloat(scores.esq_average),
+                    // نمرات قبل از معکوس‌سازی نیز ذخیره می‌شوند
+                    scs_raw_total: scores.scs_raw_total,
+                    esq_raw_total: scores.esq_raw_total
                 };
                 
                 return data;
@@ -1150,12 +1142,16 @@
                     if (value !== null) ghqTotal += value;
                 }
                 
-                // Calculate SCS score (reverse negative items: 2,4,6,8,10,12,14,16,18,20,22,24,26)
+                // Calculate SCS score (با معکوس‌سازی سوالات منفی)
                 let scsTotal = 0;
-                const scsNegative = [2,4,6,8,10,12,14,16,18,20,22,24,26];
+                let scsRawTotal = 0; // نمره قبل از معکوس‌سازی
                 for (let i = 1; i <= 26; i++) {
                     let value = getRadioValue(`scs_${i}`);
                     if (value !== null) {
+                        // ذخیره نمره خام
+                        scsRawTotal += value;
+                        
+                        // معکوس‌سازی برای سوالات منفی
                         if (scsNegative.includes(i)) {
                             value = 6 - value; // Reverse score (5-point scale)
                         }
@@ -1163,12 +1159,16 @@
                     }
                 }
                 
-                // Calculate ESQ score (reverse negative items: 2,8,13,20)
+                // Calculate ESQ score (با معکوس‌سازی سوالات منفی)
                 let esqTotal = 0;
-                const esqNegative = [2,8,13,20];
+                let esqRawTotal = 0; // نمره قبل از معکوس‌سازی
                 for (let i = 1; i <= 24; i++) {
                     let value = getRadioValue(`esq_${i}`);
                     if (value !== null) {
+                        // ذخیره نمره خام
+                        esqRawTotal += value;
+                        
+                        // معکوس‌سازی برای سوالات منفی
                         if (esqNegative.includes(i)) {
                             value = 6 - value; // Reverse score (5-point scale)
                         }
@@ -1180,6 +1180,8 @@
                     ghq_total: ghqTotal,
                     scs_total: scsTotal,
                     esq_total: esqTotal,
+                    scs_raw_total: scsRawTotal,
+                    esq_raw_total: esqRawTotal,
                     ghq_average: (ghqTotal / 28).toFixed(2),
                     scs_average: (scsTotal / 26).toFixed(2),
                     esq_average: (esqTotal / 24).toFixed(2)
